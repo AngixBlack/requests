@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Requests | @AngixBlack</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    body {
+      background: linear-gradient(135deg, #1a1a1a 0%, #121212 100%);
+      color: #e0e0e0;
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    .glow {
+      box-shadow: 0 0 20px rgba(0, 255, 102, 0.5), 0 0 40px rgba(0, 255, 102, 0.2);
+      animation: pulseGlow 2s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 102, 0.5), 0 0 40px rgba(0, 255, 102, 0.2); }
+      50% { box-shadow: 0 0 30px rgba(0, 255, 102, 0.7), 0 0 60px rgba(0, 255, 102, 0.3); }
+    }
+    .section {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease-out, opacity 0.3s ease, transform 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .section.active {
+      max-height: 3000px;
+      opacity: 1;
+      transform: translateY(0);
+      padding: 1.5rem;
+    }
+    .btn {
+      background-color: #00ff66;
+      color: #1a1a1a;
+      font-weight: 600;
+      transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    }
+    .btn:hover {
+      background-color: #00cc66;
+      transform: scale(1.03);
+      box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+    }
+    pre {
+      background-color: #222222;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid #00ff66;
+      overflow-x: auto;
+      position: relative;
+      color: #e0e0e0;
+      counter-reset: line;
+    }
+    pre code {
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 0.9rem;
+      display: block;
+    }
+    pre code span.line::before {
+      counter-increment: line;
+      content: counter(line);
+      display: inline-block;
+      width: 2rem;
+      text-align: right;
+      color: #00ff66;
+      margin-right: 1rem;
+      opacity: 0.6;
+    }
+    pre code span.line {
+      display: block;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background-color: #00ff66;
+      color: #1a1a1a;
+      padding: 0.3rem 0.6rem;
+      border-radius: 0.3rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .copy-btn:hover {
+      background-color: #00cc66;
+      transform: scale(1.05);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1.5rem;
+    }
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #333;
+    }
+    th {
+      background-color: #2c2c2c;
+      font-weight: 600;
+      color: #00ff66;
+    }
+    td code {
+      background-color: #222222;
+      padding: 0.2rem 0.4rem;
+      border-radius: 0.3rem;
+      color: #00ff66;
+    }
+    .social-link {
+      color: #00ff66;
+      text-decoration: none;
+      font-weight: 500;
+      margin: 0 0.5rem;
+      transition: color 0.3s ease, transform 0.3s ease, text-shadow 0.3s ease;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .social-link i {
+      font-size: 1.5rem;
+      transition: transform 0.3s ease, filter 0.3s ease;
+    }
+    .social-link:hover {
+      color: #00cc66;
+      transform: scale(1.2) rotate(5deg);
+      text-shadow: 0 0 10px rgba(0, 255, 102, 0.8), 0 0 20px rgba(0, 255, 102, 0.4);
+      animation: bounce 0.4s ease;
+    }
+    .social-link:hover i {
+      filter: drop-shadow(0 0 8px rgba(0, 255, 102, 0.7));
+    }
+    .social-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background-color: #00cc66;
+      transition: width 0.3s ease;
+    }
+    .social-link:hover::after {
+      width: 100%;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: scale(1.2) rotate(5deg); }
+      50% { transform: scale(1.3) rotate(5deg); }
+    }
+    .header {
+      background: linear-gradient(180deg, #2c2c2c, #1a1a1a);
+      border: 1px solid #00ff66;
+      animation: headerGlow 3s ease-in-out infinite;
+    }
+    @keyframes headerGlow {
+      0%, 100% { border-color: #00ff66; }
+      50% { border-color: #00cc66; }
+    }
+    footer {
+      border-top: 1px solid #333;
+      padding-top: 1.5rem;
+    }
+    @media (max-width: 640px) {
+      h1 {
+        font-size: 1.75rem;
+      }
+      .btn {
+        font-size: 0.9rem;
+        padding: 0.75rem;
+      }
+      pre {
+        font-size: 0.85rem;
+      }
+      .social-link i {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-10 px-4">
+
+  <!-- Header -->
+  <header class="w-full max-w-5xl mb-10 flex justify-between items-center header p-6 rounded-lg shadow-lg">
+    <div class="flex items-center space-x-4">
+      <img id="channel-logo" src="AngixBlack.png" alt="Angix Black Logo" class="w-12 h-12 rounded-full object-cover border border-green-400">
+      <h1 class="text-2xl font-bold text-green-400">@AngixBlack</h1>
+    </div>
+    <div class="text-sm text-gray-300 flex items-center space-x-2">
+      <span>Follow me on:</span>
+      <a href="https://instagram.com/AngixBlack" target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+      <a href="https://x.com/AngixBlack" target="_blank" class="social-link"><i class="fab fa-x-twitter"></i></a>
+      <a href="https://facebook.com/Ang
+
+ixBlack" target="_blank" class="social-link"><i class="fab fa-facebook"></i></a>
+      <a href="https://github.com/AngixBlack" target="_blank" class="social-link"><i class="fab fa-github"></i></a>
+      <a href="https://youtube.com/@AngixBlack" target="_blank" class="social-link"><i class="fab fa-youtube"></i></a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl w-full bg-gray-900 p-8 rounded-lg glow">
+    <h1 class="text-4xl font-bold text-green-400 text-center mb-6">Python Requests Course</h1>
+    <p class="text-gray-300 text-center mb-8">Master the <code class="bg-gray-800 px-1 rounded text-green-400">requests</code> library in Python for seamless HTTP requests and API interactions.</p>
+
+    <!-- Sections -->
+    <button onclick="toggleSection('intro')" class="btn w-full p-3 mb-3 rounded-lg">Introduction to Requests</button>
+    <div id="intro" class="section">
+      <p class="mb-4">The <code class="text-green-400">requests</code> library is a user-friendly HTTP client for Python, enabling easy HTTP/1.1 requests without manual handling of query strings or form encoding.</p>
+      <pre><code>
+<span class="line">import requests</span>
+<span class="line"></span>
+<span class="line"># Simple GET request</span>
+<span class="line">response = requests.get('https://www.google.com')</span>
+<span class="line">print(response.status_code)</span>
+<span class="line">print(response.text)</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('basic')" class="btn w-full p-3 mb-3 rounded-lg">Basic HTTP Methods</button>
+    <div id="basic" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">GET, POST, PUT, PATCH, DELETE</h2>
+      <pre><code>
+<span class="line"># GET Request</span>
+<span class="line">requests.get('https://api.example.com/data')</span>
+<span class="line"></span>
+<span class="line"># POST Request</span>
+<span class="line">requests.post('https://api.example.com/submit', json={'key': 'value'})</span>
+<span class="line"></span>
+<span class="line"># PUT / PATCH / DELETE</span>
+<span class="line">requests.put('https://api.example.com/update/1', json={'key': 'new'})</span>
+<span class="line">requests.patch('https://api.example.com/update/1', json={'key': 'partial'})</span>
+<span class="line">requests.delete('https://api.example.com/delete/1')</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('params')" class="btn w-full p-3 mb-3 rounded-lg">Query Parameters</button>
+    <div id="params" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Adding Query Strings</h2>
+      <pre><code>
+<span class="line">params = {'q': 'python', 'page': 1}</span>
+<span class="line">response = requests.get('https://api.example.com/search', params=params)</span>
+<span class="line">print(response.url)  # https://api.example.com/search?q=python&page=1</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('headers')" class="btn w-full p-3 mb-3 rounded-lg">Headers</button>
+    <div id="headers" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Custom Request Headers</h2>
+      <pre><code>
+<span class="line">headers = {'Authorization': 'Bearer YOUR_TOKEN'}</span>
+<span class="line">response = requests.get('https://api.example.com/protected', headers=headers)</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('data')" class="btn w-full p-3 mb-3 rounded-lg">Sending Data</button>
+    <div id="data" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Send Form, File, JSON, or Multipart Data</h2>
+      <pre><code>
+<span class="line"># Form data</span>
+<span class="line">requests.post('https://api.example.com/login', data={'username': 'user'})</span>
+<span class="line"></span>
+<span class="line"># Files</span>
+<span class="line">files = {'file': open('example.txt', 'rb')}</span>
+<span class="line">requests.post('https://api.example.com/upload', files=files)</span>
+<span class="line"></span>
+<span class="line"># JSON</span>
+<span class="line">requests.post('https://api.example.com/json', json={'name': 'Ali'})</span>
+<span class="line"></span>
+<span class="line"># Multipart form data (combined fields and files)</span>
+<span class="line">data = {'field1': 'value1'}</span>
+<span class="line">files = {'file': open('example.txt', 'rb')}</span>
+<span class="line">requests.post('https://api.example.com/upload', data=data, files=files)</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('responses')" class="btn w-full p-3 mb-3 rounded-lg">Response Handling</button>
+    <div id="responses" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Working with Responses</h2>
+      <pre><code>
+<span class="line">if response.status_code == 200:</span>
+<span class="line">    print("Success!")</span>
+<span class="line">print(response.text)            # Raw string</span>
+<span class="line">print(response.json())          # Parsed JSON</span>
+<span class="line">print(response.headers['Content-Type'])</span>
+<span class="line"></span>
+<span class="line"># Handle response encoding</span>
+<span class="line">response.encoding = 'utf-8'    # Force encoding for non-UTF-8 responses</span>
+<span class="line">print(response.text)</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('errors')" class="btn w-full p-3 mb-3 rounded-lg">Error Handling</button>
+    <div id="errors" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Handling Errors</h2>
+      <pre><code>
+<span class="line">try:</span>
+<span class="line">    response = requests.get('https://api.example.com', timeout=5)</span>
+<span class="line">    response.raise_for_status()</span>
+<span class="line">except requests.exceptions.RequestException as e:</span>
+<span class="line">    print(f"Request failed: {e}")</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('advanced')" class="btn w-full p-3 mb-3 rounded-lg">Advanced Features</button>
+    <div id="advanced" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Timeouts, Sessions, Proxies</h2>
+      <pre><code>
+<span class="line"># Timeout and Redirects</span>
+<span class="line">requests.get('https://api.example.com', timeout=5, allow_redirects=False)</span>
+<span class="line"></span>
+<span class="line"># Sessions for persistent headers</span>
+<span class="line">session = requests.Session()</span>
+<span class="line">session.headers.update({'Authorization': 'Bearer YOUR_TOKEN'})</span>
+<span class="line">session.get('https://api.example.com/data')</span>
+<span class="line"></span>
+<span class="line"># Proxies</span>
+<span class="line">proxies = {'http': 'http://proxy.example.com:8080', 'https': 'https://proxy.example.com:8080'}</span>
+<span class="line">requests.get('https://api.example.com', proxies=proxies)</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('auth')" class="btn w-full p-3 mb-3 rounded-lg">Authentication</button>
+    <div id="auth" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Authenticating Requests</h2>
+      <pre><code>
+<span class="line">from requests.auth import HTTPBasicAuth</span>
+<span class="line"></span>
+<span class="line"># Basic Auth</span>
+<span class="line">requests.get('https://api.example.com', auth=HTTPBasicAuth('user', 'pass'))</span>
+<span class="line"></span>
+<span class="line"># Token Auth</span>
+<span class="line">headers = {'Authorization': 'Bearer YOUR_TOKEN'}</span>
+<span class="line">requests.get('https://api.example.com', headers=headers)</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('cookies')" class="btn w-full p-3 mb-3 rounded-lg">Cookies Handling</button>
+    <div id="cookies" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Sending and Receiving Cookies</h2>
+      <p class="mb-4">The <code class="text-green-400">requests</code> library allows sending cookies with requests and accessing cookies from responses, useful for session management or web scraping.</p>
+      <pre><code>
+<span class="line"># Sending cookies</span>
+<span class="line">cookies = {'session_id': 'abc123'}</span>
+<span class="line">response = requests.get('https://api.example.com', cookies=cookies)</ Spotlight on Grok 3: xAI’s Latest AI Breakthrough
+
+<span class="line"></span>
+<span class="line"># Accessing response cookies</span>
+<span class="line">print(response.cookies['session_id'])</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('ssl')" class="btn w-full p-3 mb-3 rounded-lg">SSL Verification</button>
+    <div id="ssl" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Handling SSL Certificates</h2>
+      <p class="mb-4">The <code class="text-green-400">requests</code> library verifies SSL certificates by default for secure connections. You can disable verification or use custom certificates.</p>
+      <pre><code>
+<span class="line"># Disable SSL verification (not recommended for production)</span>
+<span class="line">requests.get('https://api.example.com', verify=False)</span>
+<span class="line"></span>
+<span class="line"># Specify a custom CA certificate</span>
+<span class="line">requests.get('https://api.example.com', verify='/path/to/cert.pem')</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('retries')" class="btn w-full p-3 mb-3 rounded-lg">Retries with Adapters</button>
+    <div id="retries" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Automatic Retries for Failed Requests</h2>
+      <p class="mb-4">Use HTTP adapters to retry failed requests, improving robustness for unreliable APIs.</p>
+      <pre><code>
+<span class="line">from requests.adapters import HTTPAdapter</span>
+<span class="line">from urllib3.util.retry import Retry</span>
+<span class="line"></span>
+<span class="line">session = requests.Session()</span>
+<span class="line">retries = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])</span>
+<span class="line">session.mount('https://', HTTPAdapter(max_retries=retries))</span>
+<span class="line">response = session.get('https://api.example.com')</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('hooks')" class="btn w-full p-3 mb-3 rounded-lg">Request Hooks</button>
+    <div id="hooks" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Custom Request Hooks</h2>
+      <p class="mb-4">Hooks allow custom callbacks for modifying requests or responses, useful for logging or dynamic headers.</p>
+      <pre><code>
+<span class="line">def log_response(resp, *args, **kwargs):</span>
+<span class="line">    print(f"Response status: {resp.status_code}")</span>
+<span class="line"></span>
+<span class="line">hooks = {'response': log_response}</span>
+<span class="line">requests.get('https://api.example.com', hooks=hooks)</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('prepared')" class="btn w-full p-3 mb-3 rounded-lg">Prepared Requests</button>
+    <div id="prepared" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Using Prepared Requests</h2>
+      <p class="mb-4">Prepared requests allow fine-grained control over request construction before sending.</p>
+      <pre><code>
+<span class="line">from requests import Request, Session</span>
+<span class="line"></span>
+<span class="line">req = Request('GET', 'https://api.example.com', headers={'Authorization': 'Bearer TOKEN'})</span>
+<span class="line">prepared = req.prepare()</span>
+<span class="line">session = Session()</span>
+<span class="line">response = session.send(prepared)</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('streaming')" class="btn w-full p-3 mb-3 rounded-lg">Streaming & Large Files</button>
+    <div id="streaming" class="section">
+      <h2 class="text-2xl text-green-400 mb-3">Download Large Files</h2>
+      <pre><code>
+<span class="line">with open('large_file.zip', 'wb') as f:</span>
+<span class="line">    r = requests.get('https://example.com/large_file.zip', stream=True)</span>
+<span class="line">    for chunk in r.iter_content(chunk_size=1024):</span>
+<span class="line">        if chunk:</span>
+<span class="line">            f.write(chunk)</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+
+    <button onclick="toggleSection('functions')" class="btn w-full p-3 mt-6 bg-blue-500 rounded-lg">All Functions Reference Table</button>
+    <div id="functions" class="section">
+      <h2 class="text-3xl text-green-400 mb-4">Requests Library Functions Overview</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Function</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>requests.request()</code></td><td>Generic method for any HTTP request</td><td><code>requests.request('GET', 'https://api.example.com')</code></td></tr>
+          <tr><td><code>requests.get()</code></td><td>Send a GET request (fetch data)</td><td><code>requests.get('https://api.example.com')</code></td></tr>
+          <tr><td><code>requests.post()</code></td><td>Send a POST request (send data)</td><td><code>requests.post(url, data={'key': 'val'})</code></td></tr>
+          <tr><td><code>requests.put()</code></td><td>Send a PUT request (update data)</td><td><code>requests.put(url, json={'key': 'val'})</code></td></tr>
+          <tr><td><code>requests.patch()</code></td><td>Send a PATCH request (partial update)</td><td><code>requests.patch(url, json={'key': 'val'})</code></td></tr>
+          <tr><td><code>requests.delete()</code></td><td>Send a DELETE request (remove resource)</td><td><code>requests.delete('https://api.example.com/1')</code></td></tr>
+          <tr><td><code>requests.head()</code></td><td>Send a HEAD request (get headers only)</td><td><code>requests.head('https://example.com')</code></td></tr>
+          <tr><td><code>requests.options()</code></td><td>Send an OPTIONS request (CORS info)</td><td><code>requests.options('https://api.example.com')</code></td></tr>
+          <tr><td><code>Session()</code></td><td>Persistent session for multiple requests</td><td><code>s = requests.Session()<br>s.get(url)</code></td></tr>
+          <tr><td><code>raise_for_status()</code></td><td>Raise exception if status is not 2xx</td><td><code>r.raise_for_status()</code></td></tr>
+          <tr><td><code>json()</code></td><td>Parses the JSON response</td><td><code>r.json()</code></td></tr>
+          <tr><td><code>content</code></td><td>Binary response content</td><td><code>r.content</code></td></tr>
+          <tr><td><code>text</code></td><td>Text response content</td><td><code>r.text</code></td></tr>
+          <tr><td><code>status_code</code></td><td>Get HTTP status code</td><td><code>r.status_code</code></td></tr>
+          <tr><td><code>headers</code></td><td>Access response headers</td><td><code>r.headers['Content-Type']</code></td></tr>
+          <tr><td><code>cookies</code></td><td>Access cookies from response</td><td><code>r.cookies</code></td></tr>
+          <tr><td><code>allow_redirects</code></td><td>Control redirect behavior</td><td><code>requests.get(url, allow_redirects=False)</code></td></tr>
+          <tr><td><code>timeout</code></td><td>Set timeout for request</td><td><code>requests.get(url, timeout=5)</code></td></tr>
+          <tr><td><code>proxies</code></td><td>Use proxy servers</td><td><code>requests.get(url, proxies=proxies)</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mini Project -->
+    <button onclick="toggleSection('project')" class="btn w-full p-3 mt-6 bg-purple-600 rounded-lg">Mini Project: GitHub User Info Fetcher</button>
+    <div id="project" class="section">
+      <h2 class="text-3xl text-green-400 mb-4">Mini Project: Fetch GitHub User Info</h2>
+      <p class="mb-4">This project uses <code>requests</code> to fetch and display information about a GitHub user via the GitHub API. Enter a username to see details like name, bio, and public repositories.</p>
+      <p class="mb-4 text-gray-400">Note: Respect API rate limits by adding a delay between requests, especially for unauthenticated GitHub API calls (60 requests/hour).</p>
+      <pre><code>
+<span class="line">import requests</span>
+<span class="line">import time</span>
+<span class="line"></span>
+<span class="line">def fetch_github_user(username):</span>
+<span class="line">    time.sleep(1)  # Respect rate limits</span>
+<span class="line">    url = f"https://api.github.com/users/{username}"</span>
+<span class="line">    try:</span>
+<span class="line">        response = requests.get(url, timeout=5)</span>
+<span class="line">        response.raise_for_status()</span>
+<span class="line">        user = response.json()</span>
+<span class="line">        print(f"Username: {user['login']}")</span>
+<span class="line">        print(f"Name: {user.get('name', 'N/A')}")</span>
+<span class="line">        print(f"Bio: {user.get('bio', 'N/A')}")</span>
+<span class="line">        print(f"Public Repos: {user['public_repos']}")</span>
+<span class="line">        print(f"Followers: {user['followers']}")</span>
+<span class="line">    except requests.exceptions.RequestException as e:</span>
+<span class="line">        print(f"Error fetching user {username}: {e}")</span>
+<span class="line"></span>
+<span class="line">if __name__ == "__main__":</span>
+<span class="line">    username = input("Enter GitHub username: ")</span>
+<span class="line">    fetch_github_user(username)</span>
+      </code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      <h3 class="text-xl text-green-500 mb-2">Example Output:</h3>
+      <pre><code>
+<span class="line">Enter GitHub username: octocat</span>
+<span class="line">Username: octocat</span>
+<span class="line">Name: The Octocat</span>
+<span class="line">Bio: N/A</span>
+<span class="line">Public Repos: 8</span>
+<span class="line">Followers: 6</span>
+      </code></pre>
+      <p class="mt-4">Run this script, enter a GitHub username, and it will fetch the user's public profile data. The code demonstrates error handling, JSON parsing, and GET requests.</p>
+    </div>
+  </main>
+
+  <footer class="mt-10 w-full max-w-5xl text-center text-gray-600 text-sm">
+    <p>© 2025 @AngixBlack - All rights reserved.</p>
+  </footer>
+
+  <script>
+    var gk_isXlsx = false;
+    var gk_xlsxFileLookup = {};
+    var gk_fileData = {};
+    function filledCell(cell) {
+      return cell !== '' && cell != null;
+    }
+    function loadFileData(filename) {
+      if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+        try {
+          var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+          var firstSheetName = workbook.SheetNames[0];
+          var worksheet = workbook.Sheets[firstSheetName];
+          var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+          var filteredData = jsonData.filter(row => row.some(filledCell));
+          var headerRowIndex = filteredData.findIndex((row, index) =>
+            row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+          );
+          if (headerRowIndex === -1 || headerRowIndex > 25) {
+            headerRowIndex = 0;
+          }
+          var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+          csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+          return csv;
+        } catch (e) {
+          console.error(e);
+          return "";
+        }
+      }
+      return gk_fileData[filename] || "";
+    }
+
+    function toggleSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      section.classList.toggle('active');
+    }
+
+    function copyCode(button) {
+      const code = button.previousElementSibling.innerText;
+      const textarea = document.createElement('textarea');
+      textarea.value = code;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        button.innerText = 'Copied!';
+        setTimeout(() => button.innerText = 'Copy', 2000);
+      } catch (err) {
+        button.innerText = 'Error';
+        setTimeout(() => button.innerText = 'Copy', 2000);
+      }
+      document.body.removeChild(textarea);
+    }
+  </script>
+</body>
+</html>
